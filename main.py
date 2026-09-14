@@ -1,15 +1,11 @@
 import time
-import json
 import signal
 import argparse
-import csv
 import logging
-from datetime import datetime
 from pathlib import Path
 
 from config import (
     OUTPUT_FOLDER,
-    RESULTS_FILE,
     PDFS_FOLDER,
     POLL_INTERVAL,
     REQUEST_TIMEOUT,
@@ -22,6 +18,7 @@ from biorxiv_client import BioRxivClient
 from agent_selector import AgentSelector
 from pdf_extractor import extract_first_n_pages
 from classifier import Classifier
+from database import DatabaseManager
 
 
 def setup_logging():
@@ -55,6 +52,7 @@ class BioRxivAgent:
         self.biorxiv = BioRxivClient()
         self.selector = AgentSelector(research_interests=research_interests)
         self.classifier = Classifier()
+        self.db = DatabaseManager()
         self.running = True
         self.poll_interval = poll_interval
         
@@ -68,69 +66,10 @@ class BioRxivAgent:
         logger.info("Shutdown signal received. Saving state...")
         self.running = False
 
-    def _save_summary_sheet(self, papers: list, evaluations: list, results: list) -> None:
-        csv_path = Path(OUTPUT_FOLDER) / "paper_summary.csv"
-        
-        rows = []
+    def _save_to_database(self, papers: list, evaluations: list, results: list) -> None:
         for paper, eval_data, result in zip(papers, evaluations, results):
-            rows.append({
-                "doi": paper.get("doi"),
-                "title": paper.get("title"),
-                "authors": paper.get("authors"),
-                "date": paper.get("date"),
-                "category": paper.get("category"),
-                "relevance_score": eval_data.get("relevance_score"),
-                "novelty_score": eval_data.get("novelty_score"),
-                "rigor_score": eval_data.get("rigor_score"),
-                "agent_recommendation": eval_data.get("recommendation"),
-                "agent_reasoning": eval_data.get("reasoning"),
-                "classification": result.get("classification") if result else "N/A",
-                "classification_confidence": result.get("confidence") if result else "N/A",
-                "pdf_downloaded": "YES" if result else "NO",
-                "pdf_path": result.get("pdf_path") if result else "",
-                "processed_at": datetime.now().isoformat(),
-            })
-        
-        fieldnames = list(rows[0].keys()) if rows else []
-        file_exists = csv_path.exists()
-        
-        with open(csv_path, "a", newline="", encoding="utf-8") as f:
-            writer = csv.DictWriter(f, fieldnames=fieldnames)
-            if not file_exists:
-                writer.writeheader()
-            writer.writerows(rows)
-        
-        print(f"  Summary sheet updated: {csv_path}")
-
-    def _save_json_results(self, papers: list, evaluations: list, results: list) -> None:
-        json_path = Path(OUTPUT_FOLDER) / RESULTS_FILE
-        
-        existing = []
-        if json_path.exists():
-            try:
-                with open(json_path, "r") as f:
-                    existing = json.load(f)
-            except:
-                pass
-        
-        for paper, eval_data, result in zip(papers, evaluations, results):
-            existing.append({
-                "doi": paper.get("doi"),
-                "title": paper.get("title"),
-                "authors": paper.get("authors"),
-                "date": paper.get("date"),
-                "category": paper.get("category"),
-                "abstract": paper.get("abstract", "")[:500],
-                "evaluation": eval_data,
-                "classification": result.get("classification") if result else None,
-                "classification_confidence": result.get("confidence") if result else None,
-                "classification_reasoning": result.get("reasoning") if result else None,
-                "pdf_path": result.get("pdf_path") if result else None,
-                "processed_at": datetime.now().isoformat(),
-            })
-        
-        with open(json_path, "w") as f:
-            json.dump(existing, f, indent=2)
+            self.db.insert_paper(paper, eval_data, result)
+        logger.info(f"  Database updated: {self.db.count()} total papers")
 
     def run_cycle(self, days_back: int = 1, server: str = "biorxiv", max_papers: int = 50) -> int:
         logger.info("=" * 60)
@@ -230,8 +169,7 @@ class BioRxivAgent:
         selected_results = results
         
         if selected_papers:
-            self._save_summary_sheet(selected_papers, selected_evals, selected_results)
-            self._save_json_results(selected_papers, selected_evals, selected_results)
+            self._save_to_database(selected_papers, selected_evals, selected_results)
         
         logger.info(f"Cycle complete: {downloaded} PDFs downloaded from {len(top_papers)} selected")
         return downloaded
