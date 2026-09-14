@@ -1,0 +1,87 @@
+# BioRxiv Agent - Research Interests
+# Edit this file to customize what papers the agent selects
+# The LLM reads this to score papers 0-10 on relevance
+
+## SCORING GUIDELINES (for the LLM)
+# 8-10: Paper's MAIN contribution is a NEW computational/ML method or significant computational analysis
+# 5-7:  Paper has substantial computational component mixed with wet-lab, or applies existing tools well
+# 3-4:  Paper mentions computational tools but focus is biological discovery
+# 0-2:  Pure wet-lab, no computational method development or significant analysis
+
+## HIGH PRIORITY - Score 8-10 (DOWNLOAD)
+# Core computational/ML method development in biology
+
+- Machine learning / deep learning / neural networks FOR protein structure prediction
+  (AlphaFold, ESMFold, RoseTTAFold, OmegaFold, Boltz, Chai, DiffDock, etc.)
+- Protein DESIGN (de novo, binder, enzyme, scaffold) using ML/generative models
+  (RFdiffusion, ProteinMPNN, ESM-IF, Genie, Chroma, FrameDiff, etc.)
+- Molecular dynamics (MD) simulations with enhanced sampling or ML acceleration
+  (OpenMM, CHARMM, AMBER, GROMACS, NAMD, Martini, CG models, ML force fields)
+- Bacterial chemotaxis MODELING/SIMULATION (agent-based, PDE, stochastic, ML)
+- Foundation models for biology: ESM, ProtBERT, ProGen, Nucleotide Transformer, DNABERT, scGPT, GeneFormer, UCE, scVI, scANVI, scBERT
+- Generative models for molecules/proteins: diffusion (SE(3), FrameDiff), VAEs, GANs, normalizing flows
+- LLM/transformer applications to biological sequences (DNA, RNA, protein, genome)
+- Graph neural networks (GNNs) for: protein structure, PPI, drug-target, molecular property, pathways
+- Geometric deep learning / equivariant networks for 3D molecular data
+- AI/ML for drug discovery: virtual screening, docking (DiffDock, EquiBind), ADMET, de novo design
+- Single-cell analysis METHODS: clustering, trajectory, integration, perturbation prediction, RNA velocity
+  (scVI, CellOT, VeloVAE, Dynamo, STACAS, Harmony, Seurat v5, Scanpy, CellTypist)
+- Spatial transcriptomics COMPUTATIONAL methods: deconvolution, cell-cell communication, alignment
+  (Cell2location, RCTD, SpaGE, Tangram, SpaOTsc, COMMOT, CellChat, CellPhoneDB)
+- Multi-omics integration: MOFA+, totalVI, SCAR, BABEL, scJoint, CCA, WNN
+- Variant calling / genome assembly PIPELINES for long-read (PacBio HiFi, ONT) or single-cell DNA
+- Genome assembly/annotation algorithms: hifiasm, Flye, Verkko, RagTag, minigraph, pangenome graphs
+- Pangenomics / graph genomes / variation graphs (VG, minigraph, PanGenie, PGGB)
+- Metabolic modeling: FBA, pFBA, dFBA, GEMs, COBRApy, CarveMe, ModelSEED, MICOM
+- Systems biology: ODE/PDE modeling, Boolean networks, Bayesian networks, parameter inference
+- Cryo-EM / structural biology computational methods: reconstruction, map sharpening, model building
+
+## MEDIUM PRIORITY - Score 5-7 (DOWNLOAD if high novelty/rigor)
+# Good computational work, applied or established methods
+
+- Benchmarking studies of computational tools (if systematic and thorough)
+- Application of established ML tools to new biological problems (if novel biology)
+- Bioinformatics resource/database papers with significant computational infrastructure
+- Evolutionary analysis WITH computational methods (phylogenetics, selection detection, ancestral reconstruction)
+- Population genetics / GWAS with novel statistical/computational approaches
+- Epigenomics / chromatin architecture computational analysis (Hi-C, ATAC-seq, ChIP-seq pipelines)
+- Immunology/TCR/BCR repertoire analysis with computational focus
+- Neuroscience with heavy computational modeling (connectomics, neural decoding, brain models)
+
+## LOWER PRIORITY - Score 3-4 (SKIP unless exceptional)
+# Primarily biological with some computation
+
+- Wet-lab papers using standard bioinformatics tools (BLAST, DESeq2, Seurat, etc.) without method development
+- Clinical/medical studies using existing ML models
+- General tool/resource papers without novel algorithms
+
+## EXCLUDE - Score 0-2 (SKIP)
+# Pure wet-lab, no significant computational contribution
+
+- Pure CRISPR screens, animal models, cell culture, microscopy, flow cytometry
+- Neuroscience, immunology, cancer biology WITHOUT computational focus
+- Clinical trials, case studies, epidemiology, cohort studies
+- Ecology, evolution, behavior WITHOUT computational methods
+- Biochemistry/biophysics wet-lab (ITC, SPR, EMSA, western blot, etc.)
+- General review/opinion/perspective papers
+- Preprints with "methods" only in supplement, not main text
+
+## KEYWORD BOOSTERS (add +1-2 to relevance if present in title/abstract)
+# These signal strong computational focus
+
+methods, algorithm, pipeline, framework, benchmark, model, predict, predict, simulate, 
+simulation, computational, in silico, machine learning, deep learning, neural network,
+transformer, diffusion, generative, foundation model, large language model, LLM,
+graph neural network, GNN, equivariant, geometric deep learning, AlphaFold, ESM,
+RFdiffusion, ProteinMPNN, molecular dynamics, MD simulation, enhanced sampling,
+free energy, metagenomics, single-cell, spatial transcriptomics, multi-omics,
+pangenome, long-read, variant calling, genome assembly, metabolic model, flux balance
+
+## NEGATIVE KEYWORDS (subtract -1-2 from relevance)
+# These signal wet-lab focus
+
+CRISPR, knockout, mouse model, animal model, cell line, culture, microscopy,
+imaging, flow cytometry, western blot, PCR, qPCR, ELISA, immunohistochemistry,
+clinical trial, patient cohort, case study, epidemiology, prevalence, incidence,
+survival analysis, Kaplan-Meier, xenograft, organoid, wet-lab, experiment,
+biochemical, biophysical, binding assay, enzymatic assay
