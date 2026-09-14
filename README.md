@@ -6,7 +6,7 @@ Autonomous agent that fetches bioRxiv/medRxiv papers, uses LLM (Ollama) to evalu
 - **LLM-powered selection** - Agent reads abstracts and decides what's relevant
 - **Auto PDF download** - Downloads full PDFs for selected papers
 - **Classification** - Tags papers as computational/experimental
-- **Summary sheet** - CSV + JSON output for easy tracking
+- **SQLite database** - Structured storage for papers, evaluations, and classifications
 - **Daemon or cron** - Run continuously or scheduled
 
 ## Quick Start
@@ -16,7 +16,7 @@ Autonomous agent that fetches bioRxiv/medRxiv papers, uses LLM (Ollama) to evalu
 pip install -r requirements.txt
 
 # 2. Start Ollama (separate terminal)
-ollama pull nemotron-3-nano:4b  # or llama3.1:8b, etc. Depends on the RAM avaialble 
+ollama pull nemotron-3-nano:4b  # or llama3.1:8b, etc. Depends on the RAM available
 ollama serve
 
 # 3. Customize your interests
@@ -33,8 +33,37 @@ python -m biorxiv_agent.main --daemon --interval 3600 --days 1 --interests resea
 ```
 ~/biorxiv_agent/
 ├── pdfs/                    # Downloaded PDFs
-├── selected_papers.json     # Full details
-└── paper_summary.csv        # Spreadsheet-ready summary
+├── papers.db                # SQLite database with all papers, evaluations, classifications
+└── agent.log                # Agent log file
+```
+
+### Database Schema
+The `papers.db` SQLite database contains a `papers` table with:
+- `doi` (UNIQUE) - Paper DOI
+- `title`, `authors`, `date`, `category`, `abstract` - Paper metadata
+- `relevance_score`, `novelty_score`, `rigor_score` - Agent scores (0-10)
+- `agent_recommendation` - "DOWNLOAD" or "SKIP"
+- `agent_reasoning` - Agent's reasoning
+- `classification` - "computational" / "experimental" / "unknown"
+- `classification_confidence` - Confidence score (0.0-1.0)
+- `classification_reasoning` - Classifier reasoning
+- `pdf_downloaded` - 1 if PDF downloaded, 0 otherwise
+- `pdf_path` - Local path to downloaded PDF
+- `processed_at` - Timestamp when processed
+
+### Querying the Database
+```bash
+# View all papers
+sqlite3 ~/biorxiv_agent/papers.db "SELECT doi, title, agent_recommendation, classification FROM papers;"
+
+# View only downloaded papers
+sqlite3 ~/biorxiv_agent/papers.db "SELECT doi, title, pdf_path FROM papers WHERE pdf_downloaded=1;"
+
+# View papers by recommendation
+sqlite3 ~/biorxiv_agent/papers.db "SELECT doi, title, relevance_score FROM papers WHERE agent_recommendation='DOWNLOAD' ORDER BY relevance_score DESC;"
+
+# Export to CSV
+sqlite3 -header -csv ~/biorxiv_agent/papers.db "SELECT * FROM papers;" > paper_summary.csv
 ```
 
 ## Configuration
@@ -43,3 +72,12 @@ Edit `config.py` for:
 - `UNCERTAINTY_THRESHOLD` - Confidence threshold for PDF fallback (default 0.7)
 - `POLL_INTERVAL` - Daemon poll interval in seconds
 - `MAX_RETRIES` / `BACKOFF_FACTOR` - API retry behavior
+
+## Requirements
+- Python 3.8+
+- Ollama running locally
+- Dependencies in `requirements.txt`:
+  - `requests` - HTTP client for bioRxiv API
+  - `pymupdf` - PDF text extraction
+  - `ollama` - LLM client
+  - `sqlite3` - Built into Python standard library (no install needed)
