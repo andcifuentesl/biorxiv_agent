@@ -1,0 +1,23 @@
+# BioRxiv Agent - Research Interests
+# Edit this file to customize what papers the agent selects
+
+HIGH PRIORITY (download these):
+- Machine learning / deep learning for protein structure prediction (AlphaFold, ESMFold, etc.)
+- MD simulations 
+- Bacterial chemotaxis
+
+MEDIUM PRIORITY:
+- Single-cell RNA-seq analysis methods (clustering, trajectory, integration)
+- Spatial transcriptomics computational methods
+- Multi-omics integration using ML
+- Graph neural networks for biological networks
+- Metabolic modeling and flux balance analysis
+
+LOWER PRIORITY:
+
+EXCLUDE (skip these):
+- Pure wet-lab experimental papers without computational component
+- Clinical trials without ML/computational angle
+- Ecology/evolution papers without computational methods
+- General bioinformatics tool development
+- Medical AI applications
