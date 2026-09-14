@@ -1,0 +1,4 @@
+# Ignore a specific folder and all its contents
+pdfs
+# Ignore all files with a specific extension
+*.log
