@@ -54,36 +54,44 @@ class DatabaseManager:
         conn.close()
 
     def insert_paper(self, paper: Dict, eval_data: Dict, result: Optional[Dict]) -> None:
-        conn = self._get_conn()
-        conn.execute("""
-            INSERT OR REPLACE INTO papers (
-                doi, title, authors, date, category, abstract,
-                relevance_score, novelty_score, rigor_score,
-                agent_recommendation, agent_reasoning,
-                classification, classification_confidence, classification_reasoning,
-                pdf_downloaded, pdf_path, processed_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, (
-            paper.get("doi"),
-            paper.get("title"),
-            paper.get("authors"),
-            paper.get("date"),
-            paper.get("category"),
-            paper.get("abstract", "")[:2000],
-            eval_data.get("relevance_score"),
-            eval_data.get("novelty_score"),
-            eval_data.get("rigor_score"),
-            eval_data.get("recommendation"),
-            eval_data.get("reasoning"),
-            result.get("classification") if result else None,
-            result.get("confidence") if result else None,
-            result.get("reasoning") if result else None,
-            1 if result and result.get("pdf_path") else 0,
-            result.get("pdf_path") if result else None,
-            datetime.now().isoformat(),
-        ))
-        conn.commit()
-        conn.close()
+        doi = paper.get("doi")
+        try:
+            conn = self._get_conn()
+            conn.execute("""
+                INSERT OR REPLACE INTO papers (
+                    doi, title, authors, date, category, abstract,
+                    relevance_score, novelty_score, rigor_score,
+                    agent_recommendation, agent_reasoning,
+                    classification, classification_confidence, classification_reasoning,
+                    pdf_downloaded, pdf_path, processed_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (
+                doi,
+                paper.get("title"),
+                paper.get("authors"),
+                paper.get("date"),
+                paper.get("category"),
+                paper.get("abstract", "")[:2000],
+                eval_data.get("relevance_score"),
+                eval_data.get("novelty_score"),
+                eval_data.get("rigor_score"),
+                eval_data.get("recommendation"),
+                eval_data.get("reasoning"),
+                result.get("classification") if result else None,
+                result.get("confidence") if result else None,
+                result.get("reasoning") if result else None,
+                1 if result and result.get("pdf_path") else 0,
+                result.get("pdf_path") if result else None,
+                datetime.now().isoformat(),
+            ))
+            conn.commit()
+            conn.close()
+            import logging
+            logging.getLogger(__name__).debug(f"Inserted paper {doi}")
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).error(f"Failed to insert paper {doi}: {e}")
+            raise
 
     def get_all_papers(self) -> List[Dict]:
         conn = self._get_conn()

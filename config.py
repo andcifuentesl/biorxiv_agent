@@ -5,14 +5,13 @@ from datetime import datetime, timedelta
 BIORXIV_API_URL = "https://api.biorxiv.org"
 OLLAMA_URL = "http://localhost:11434"
 OLLAMA_MODEL = "nemotron-3-nano:4b" 
-STATE_FILE = ".biorxiv_agent_state.json"
+STATE_FILE = str(Path.cwd() / "output" / ".biorxiv_agent_state.json")
 UNCERTAINTY_THRESHOLD = 0.7
-REQUEST_TIMEOUT = 30
-MAX_RETRIES = 3
+REQUEST_TIMEOUT = 120
+MAX_RETRIES = 5
 BACKOFF_FACTOR = 2
-OUTPUT_FOLDER = str(Path.home() / "biorxiv_agent")
-RESULTS_FILE = "selected_papers.json"
-PDFS_FOLDER = str(Path.home() / "biorxiv_agent" / "pdfs")
+OUTPUT_FOLDER = str(Path.cwd() / "output")
+PDFS_FOLDER = str(Path.cwd() / "output" / "pdfs")
 POLL_INTERVAL = 3600
 
 AGENT_PROMPT = """

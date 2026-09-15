@@ -44,6 +44,18 @@ class BioRxivClient:
                     time.sleep(retry_after)
                     continue
                 
+                # Server errors (5xx) - retry with longer backoff
+                status = response.status_code
+                logger.debug(f"Response status: {status}")
+                if 500 <= status < 600:
+                    logger.warning(f"Server error HTTP {status}: {response.text[:200]}")
+                    if attempt < MAX_RETRIES - 1:
+                        wait = BACKOFF_FACTOR ** (attempt + 2) * 5  # Longer wait: 20s, 40s, 80s...
+                        logger.info(f"Waiting {wait}s before retry...")
+                        time.sleep(wait)
+                        continue
+                    return None
+                
                 # Other HTTP errors
                 if response.status_code >= 400:
                     logger.warning(f"HTTP {response.status_code}: {response.text[:200]}")
