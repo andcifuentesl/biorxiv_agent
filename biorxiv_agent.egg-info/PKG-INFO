@@ -1,3 +1,16 @@
+Metadata-Version: 2.4
+Name: biorxiv_agent
+Version: 1.0.0
+Summary: bioRxiv Intelligent Paper Agent
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+Requires-Dist: requests>=2.31.0
+Requires-Dist: pymupdf>=1.23.0
+Requires-Dist: ollama>=0.2.0
+Provides-Extra: dev
+Requires-Dist: pytest>=7.0; extra == "dev"
+Requires-Dist: black>=23.0; extra == "dev"
+
 # bioRxiv Intelligent Paper Agent
 
 Autonomous agent that fetches bioRxiv/medRxiv papers, uses LLM (Ollama) to evaluate relevance to your research interests, downloads selected PDFs, and classifies them.
@@ -15,34 +28,26 @@ Autonomous agent that fetches bioRxiv/medRxiv papers, uses LLM (Ollama) to evalu
 # 1. Install dependencies
 pip install -r requirements.txt
 
-# 2. Install the package (required for `python -m biorxiv_agent.main`)
-pip install .
-
-# 3. Start Ollama (separate terminal)
+# 2. Start Ollama (separate terminal)
 ollama pull nemotron-3-nano:4b  # or llama3.1:8b, etc. Depends on the RAM available
 ollama serve
 
-# 4. Customize your interests
+# 3. Customize your interests
 # Edit research_interests.txt
 
-# 5. Run once (for cron) - either method works:
-# Option A: Direct script (no install needed)
-python3 main.py --once --days 3 --max-papers 10 --interests research_interests.txt
+# 4. Run once 
+python main.py  --once --days 3 --max-papers 10 --interests research_interests.txt
 
-# Option B: Module syntax (requires pip install .)
-python3 -m biorxiv_agent.main --once --days 3 --max-papers 10 --interests research_interests.txt
-
-# 6. Or run as daemon (continuous)
-python3 -m biorxiv_agent.main --daemon --interval 3600 --days 1 --interests research_interests.txt
+# 5. Or run as daemon (continuous)
+python -m biorxiv_agent.main --daemon --interval 3600 --days 1 --interests research_interests.txt
 ```
 
 ## Output
 ```
-biorxiv_agent/output/
+~/biorxiv_agent/
+├── pdfs/                    # Downloaded PDFs
 ├── papers.db                # SQLite database with all papers, evaluations, classifications
-├── agent.log                # Agent log file
-├── .biorxiv_agent_state.json  # State tracking file
-└── pdfs/                    # Downloaded PDFs
+└── agent.log                # Agent log file
 ```
 
 ### Database Schema
@@ -62,25 +67,24 @@ The `papers.db` SQLite database contains a `papers` table with:
 ### Querying the Database
 ```bash
 # View all papers
-sqlite3 output/papers.db "SELECT doi, title, agent_recommendation, classification FROM papers;"
+sqlite3 ~/biorxiv_agent/papers.db "SELECT doi, title, agent_recommendation, classification FROM papers;"
 
 # View only downloaded papers
-sqlite3 output/papers.db "SELECT doi, title, pdf_path FROM papers WHERE pdf_downloaded=1;"
+sqlite3 ~/biorxiv_agent/papers.db "SELECT doi, title, pdf_path FROM papers WHERE pdf_downloaded=1;"
 
 # View papers by recommendation
-sqlite3 output/papers.db "SELECT doi, title, relevance_score FROM papers WHERE agent_recommendation='DOWNLOAD' ORDER BY relevance_score DESC;"
+sqlite3 ~/biorxiv_agent/papers.db "SELECT doi, title, relevance_score FROM papers WHERE agent_recommendation='DOWNLOAD' ORDER BY relevance_score DESC;"
 
 # Export to CSV
-sqlite3 -header -csv output/papers.db "SELECT * FROM papers;" > paper_summary.csv
+sqlite3 -header -csv ~/biorxiv_agent/papers.db "SELECT * FROM papers;" > paper_summary.csv
 ```
 
 ## Configuration
-Edit `biorxiv_agent/config.py` for:
+Edit `config.py` for:
 - `OLLAMA_MODEL` - Change model (e.g., `llama3.1:70b`, `mistral:7b`)
 - `UNCERTAINTY_THRESHOLD` - Confidence threshold for PDF fallback (default 0.7)
 - `POLL_INTERVAL` - Daemon poll interval in seconds
 - `MAX_RETRIES` / `BACKOFF_FACTOR` - API retry behavior
-- `REQUEST_TIMEOUT` - HTTP request timeout (default 120s)
 
 ## Requirements
 - Python 3.8+

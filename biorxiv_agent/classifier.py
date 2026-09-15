@@ -2,7 +2,7 @@ import json
 import ollama
 from typing import Optional, Dict, Any
 
-from config import (
+from .config import (
     OLLAMA_URL,
     OLLAMA_MODEL,
     UNCERTAINTY_THRESHOLD,

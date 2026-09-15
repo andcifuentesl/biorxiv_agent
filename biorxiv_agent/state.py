@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 from typing import Optional
 
-from config import STATE_FILE
+from .config import STATE_FILE
 
 
 class StateManager:

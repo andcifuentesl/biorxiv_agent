@@ -3,7 +3,7 @@ import ollama
 import logging
 from typing import List, Dict, Any
 
-from config import (
+from .config import (
     OLLAMA_URL,
     OLLAMA_MODEL,
     AGENT_PROMPT,

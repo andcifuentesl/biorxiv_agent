@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Optional, Dict, Any, List
 from datetime import datetime
 
-from config import OUTPUT_FOLDER
+from .config import OUTPUT_FOLDER
 
 
 class DatabaseManager:

@@ -6,7 +6,7 @@ from pathlib import Path
 from datetime import datetime, timedelta
 from requests.exceptions import JSONDecodeError
 
-from config import (
+from .config import (
     BIORXIV_API_URL,
     REQUEST_TIMEOUT,
     MAX_RETRIES,

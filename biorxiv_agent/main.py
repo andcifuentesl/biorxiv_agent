@@ -4,7 +4,7 @@ import argparse
 import logging
 from pathlib import Path
 
-from config import (
+from .config import (
     OUTPUT_FOLDER,
     PDFS_FOLDER,
     POLL_INTERVAL,
@@ -13,12 +13,12 @@ from config import (
     BACKOFF_FACTOR,
 )
 
-from state import StateManager
-from biorxiv_client import BioRxivClient
-from agent_selector import AgentSelector
-from pdf_extractor import extract_first_n_pages
-from classifier import Classifier
-from database import DatabaseManager
+from .state import StateManager
+from .biorxiv_client import BioRxivClient
+from .agent_selector import AgentSelector
+from .pdf_extractor import extract_first_n_pages
+from .classifier import Classifier
+from .database import DatabaseManager
 
 
 def setup_logging():
