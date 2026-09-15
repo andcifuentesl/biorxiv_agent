@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 
 BIORXIV_API_URL = "https://api.biorxiv.org"
 OLLAMA_URL = "http://localhost:11434"
-OLLAMA_MODEL = "nemotron-3-nano:4b" 
+OLLAMA_MODEL = "nemotron-3.5-lightning:latest" 
 STATE_FILE = str(Path.cwd() / "output" / ".biorxiv_agent_state.json")
 UNCERTAINTY_THRESHOLD = 0.7
 REQUEST_TIMEOUT = 120
