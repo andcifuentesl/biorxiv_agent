@@ -1,7 +1,7 @@
 # Ignore a specific folder and all its contents
 pdfs
 # Ignore specific files
-selected_papers.json
 # Ignore all files with a specific extension
 *.log
 *.swp
+*.json
