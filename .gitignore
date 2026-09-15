@@ -1,2 +1,26 @@
-# Ignore a specific folder and all its contents
-output
+# Build artifacts
+biorxiv_agent.egg-info/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Runtime output
+output/
+*.log
+*.db
+*.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Environment
+.env
+.venv
+venv/
+
+# OS
+.DS_Store
+Thumbs.db
