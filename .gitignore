@@ -1,7 +1,27 @@
-# Ignore a specific folder and all its contents
-pdfs
-# Ignore specific files
-# Ignore all files with a specific extension
+# Build artifacts
+biorxiv_agent.egg-info/
+build/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Runtime output
+output/
 *.log
+*.db
+.biorxiv_agent_state.json
+
+# IDE
+.vscode/
+.idea/
 *.swp
-*.json
+
+# Environment
+.env
+.venv
+venv/
+
+# OS
+.DS_Store
+Thumbs.db
