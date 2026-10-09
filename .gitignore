@@ -1,5 +1,6 @@
 # Build artifacts
 biorxiv_agent.egg-info/
+build/
 __pycache__/
 *.pyc
 *.pyo
@@ -9,7 +10,7 @@ __pycache__/
 output/
 *.log
 *.db
-*.json
+.biorxiv_agent_state.json
 
 # IDE
 .vscode/

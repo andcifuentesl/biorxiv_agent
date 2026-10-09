@@ -1,4 +1,5 @@
 import json
+import logging
 import ollama
 from typing import Optional, Dict, Any
 
@@ -6,7 +7,12 @@ from .config import (
     OLLAMA_URL,
     OLLAMA_MODEL,
     UNCERTAINTY_THRESHOLD,
+    CLASSIFICATION_SCHEMA,
+    ABSTRACT_MAX_CHARS,
 )
+
+
+logger = logging.getLogger(__name__)
 
 
 class Classifier:
@@ -23,21 +29,20 @@ class Classifier:
             response = self.client.chat(
                 model=self.model,
                 messages=[{"role": "user", "content": prompt}],
-                format="json",
+                format=CLASSIFICATION_SCHEMA,
                 options={"temperature": 0.1},
             )
-            content = response["message"]["content"]
-            return json.loads(content)
+            return json.loads(response["message"]["content"])
         except json.JSONDecodeError as e:
-            print(f"LLM returned invalid JSON: {e}")
+            logger.warning(f"LLM returned invalid JSON: {e}")
             return None
         except Exception as e:
-            print(f"LLM call failed: {e}")
+            logger.warning(f"LLM call failed: {e}")
             return None
 
     def _build_metadata_prompt(self, title: str, abstract: str, tags: list) -> str:
         tags_str = ", ".join(tags) if tags else "none"
-        abstract_short = abstract[:2000] if abstract else "none"
+        abstract_short = abstract[:ABSTRACT_MAX_CHARS] if abstract else "none"
         return f"""Classify this research paper as "computational" or "experimental" based on title, abstract, and category.
 
 Title: {title}
@@ -56,7 +61,7 @@ Respond with JSON only:
         return f"""Classify this research paper as "computational" or "experimental" based on full text content.
 
 Title: {title}
-Content (first 3 pages): {text_short}
+Content (first pages): {text_short}
 
 Respond with JSON only:
 {{
@@ -65,49 +70,30 @@ Respond with JSON only:
   "reasoning": "brief explanation"
 }}"""
 
-    def classify_metadata(self, title: str, abstract: str, tags: list) -> Optional[Dict[str, Any]]:
-        prompt = self._build_metadata_prompt(title, abstract, tags)
-        result = self._call_llm(prompt)
-
-        if result and self._validate_result(result):
-            return result
-
-        print("Retrying classification with stricter prompt...")
-        strict_prompt = prompt + "\n\nIMPORTANT: Respond with valid JSON only."
-        result = self._call_llm(strict_prompt)
-
-        if result and self._validate_result(result):
-            return result
-
+    def _classify(self, prompt: str, label: str) -> Dict[str, Any]:
+        for attempt in range(2):
+            result = self._call_llm(prompt)
+            if result and self._validate_result(result):
+                result["confidence"] = float(result["confidence"])
+                return result
+            if attempt == 0:
+                logger.info(f"Retrying {label} classification with stricter prompt...")
+                prompt += "\n\nIMPORTANT: Respond with valid JSON only."
         return {
             "classification": "unknown",
             "confidence": 0.0,
-            "reasoning": "Classification failed after retries",
+            "reasoning": f"{label.capitalize()} classification failed after retries",
         }
 
-    def classify_fulltext(self, title: str, text: str) -> Optional[Dict[str, Any]]:
-        prompt = self._build_fulltext_prompt(title, text)
-        result = self._call_llm(prompt)
+    def classify_metadata(self, title: str, abstract: str, tags: list) -> Dict[str, Any]:
+        return self._classify(self._build_metadata_prompt(title, abstract, tags), "metadata")
 
-        if result and self._validate_result(result):
-            return result
-
-        print("Retrying fulltext classification with stricter prompt...")
-        strict_prompt = prompt + "\n\nIMPORTANT: Respond with valid JSON only."
-        result = self._call_llm(strict_prompt)
-
-        if result and self._validate_result(result):
-            return result
-
-        return {
-            "classification": "unknown",
-            "confidence": 0.0,
-            "reasoning": "Fulltext classification failed after retries",
-        }
+    def classify_fulltext(self, title: str, text: str) -> Dict[str, Any]:
+        return self._classify(self._build_fulltext_prompt(title, text), "fulltext")
 
     def _validate_result(self, result: Dict[str, Any]) -> bool:
         required_keys = {"classification", "confidence", "reasoning"}
-        if not all(k in result for k in required_keys):
+        if not isinstance(result, dict) or not all(k in result for k in required_keys):
             return False
 
         if result["classification"] not in ("computational", "experimental", "unknown"):
